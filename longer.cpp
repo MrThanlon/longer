@@ -1,13 +1,15 @@
 //定义
+#include "longer.h"
+//typedef std::vector<unsigned long> longer;
+//typedef unsigned long sinlonger
 
-typedef std::vector<unsigned long long> longer;
-
-using std::vector;
+//using std::vector;
 
 //const unsigned long long full=18446744073709551615;//2^64-1
-const unsigned long long full=9999999999999999999;//10^19-1
-
-void longerInit(ull ull1,longer &loNumber)
+//const unsigned long long full=9999999999999999999;//10^19-1
+const sinlonger full=99999999;//10^9-1
+1000000000
+void longerInit(sinlonger ull1,longer &loNumber)
 {
 	auto loptr=loNumber.begin();
 	auto loEnd=loNumber.end();
@@ -16,88 +18,7 @@ void longerInit(ull ull1,longer &loNumber)
 		loNumber.erase(loptr);
 		++loptr;
 	}
-	loptr=loNumber.begin();
-	loEnd=loNumber.end();
-	while(loptr!=loEnd)
-	{
-		loNumber.push_back(ull1);
-	}
-}
-
-void longerInit(ull ull1,ull ull2,longer&loNumber)
-{
-	auto loptr=loNumber.begin();
-	auto loEnd=loNumber.end();
-	while(loptr!=loEnd)
-	{
-		loNumber.erase(loptr);
-		++loptr;
-	}
-	loptr=loNumber.begin();
-	loEnd=loNumber.end();
-	while(loptr!=loEnd)
-	{
-		loNumber.push_back(ull1);
-		loNumber.push_back(ull2);
-	}
-}
-
-void longerInit(ull ull1,ull ull2,ull ull3,longer&loNumber)
-{
-	auto loptr=loNumber.begin();
-	auto loEnd=loNumber.end();
-	while(loptr!=loEnd)
-	{
-		loNumber.erase(loptr);
-		++loptr;
-	}
-	loptr=loNumber.begin();
-	loEnd=loNumber.end();
-	while(loptr!=loEnd)
-	{
-		loNumber.push_back(ull1);
-		loNumber.push_back(ull2);
-		loNumber.push_back(ull3);
-	}
-}
-void longerInit(ull ull1,ull ull2,ull ull3,ull ull4,longer&loNumber)
-{
-	auto loptr=loNumber.begin();
-	auto loEnd=loNumber.end();
-	while(loptr!=loEnd)
-	{
-		loNumber.erase(loptr);
-		++loptr;
-	}
-	loptr=loNumber.begin();
-	loEnd=loNumber.end();
-	while(loptr!=loEnd)
-	{
-		loNumber.push_back(ull1);
-		loNumber.push_back(ull2);
-		loNumber.push_back(ull3);
-		loNumber.push_back(ull4);
-	}
-}
-void longerInit(ull ull1,ull ull2,ull ull3,ull ull4,ull ull5,longer&loNumber)
-{
-	auto loptr=loNumber.begin();
-	auto loEnd=loNumber.end();
-	while(loptr!=loEnd)
-	{
-		loNumber.erase(loptr);
-		++loptr;
-	}
-	loptr=loNumber.begin();
-	loEnd=loNumber.end();
-	while(loptr!=loEnd)
-	{
-		loNumber.push_back(ull1);
-		loNumber.push_back(ull2);
-		loNumber.push_back(ull3);
-		loNumber.push_back(ull4);
-		loNumber.push_back(ull5);
-	}
+    loNumber.push_back(ull1);
 }
 
 void ass(longer &assa,longer &assb)
@@ -159,7 +80,7 @@ void add(longer adda,longer &addb)
 	auto bptr=addb.begin();
 	auto bEnd=addb.end();
 
-	unsigned long long plusFlag=0;//+1信号传递
+	sinlonger plusFlag=0;//+1信号传递
 	while(aptr!=aEnd)//对a执行加到b动作
 	{
 		//对ull进行相加,相加前判断是否溢出
@@ -210,7 +131,7 @@ void sub(longer suba,longer &subb)
 	auto bptr=subb.begin();
 	auto bEnd=subb.end();
 	//减法规则,总低位开始执行减法,若减数小于被减数则从高位取值
-	unsigned long long subFlag=0;//高位取值标记,0或1
+	sinlonger subFlag=0;//高位取值标记,0或1
 	while(aptr!=aEnd)
 	{
 		if(*aptr<=(*bptr-subFlag))//(减数-subFlag)大于等于被减数,直接相减
@@ -259,75 +180,172 @@ char comp(longer &compa,longer &compb)
 		return -1;
 	return 0;//a=b
 }
-/*
-void mulh(longer &mulha,longer &mulhb)
+
+void mulh(longer mulha,longer &mulhb)
 {
 	//定理:n位数与m位数的积一定小于(n+m)位
 	auto aLenth=mulha.size();
-	auto bLenth=mmulhb.size();
+	auto bLenth=mulhb.size();
 	//结果位数一定小于aLenth+bLenth
-	//所以先直接b.push_back,aLenth次
-	int i=1;
-	for(;i<=aLenth;++i)
+	vector<longer> mulResult;
+	//存储每次下面的值与上面的值的乘积
+	bool aBiger=0;//a更大标记
+	if(aLenth>=bLenth)//a比b长,a在上
 	{
-		mmulhb.push_back(0);
+		mulResult.resize(bLenth);
+		aBiger=1;
 	}
-	bLenth=aLenth+i-1;
+	else//b比a长,b在上
+	{
+		mulResult.resize(aLenth);
+		aBiger=0;
+	}
+	auto rlenth=mulResult.size();
+	//mulResult中的longer增长
+	auto rptr=mulResult.begin();
+	auto rEnd=mulResult.end();
+	if(aBiger=1)
+	{
+		while(rptr!=rEnd)//增长每个longer,长位参数+1位
+		{
+			(*rptr).resize(aLenth+1);
+			++rptr;
+		}
+	}
+	else
+	{
+		while(rptr!=rEnd)//增长每个longer,长位参数+1位
+		{
+			(*rptr).resize(bLenth+1);
+			++rptr;
+		}
+	}
+    //单位乘法计算,存储mulResult内层
 	auto aptr=mulha.begin();
 	auto aEnd=mulha.end();
-	auto bptr=mmulhb.begin();
-	auto bEnd=mmulhb.end();
-	unsigned long long mulFlag=0;//进位标记
-	if(aLenth>=bLenth-aLenth)//a比b长,a在上
+	auto bptr=mulhb.begin();
+	auto bEnd=mulhb.end();
+
+	rptr=mulResult.begin();//mulResult外层迭代器
+	rEnd=mulResult.end();
+	auto inside_ptr=(*rptr).begin();//mulResult内层迭代器
+	auto insideEnd_ptr=(*rptr).end();
+
+	unsigned long mulFlag=0;//进位标记
+	if(aBiger=1)//a比b长,a在上
 	{
 		while(bptr!=bEnd)
 		{
+			inside_ptr=(*rptr).begin();
 			while(aptr!=aEnd)
 			{
-				if((full-mulFlag)>=*aptr**bptr)//*aptr**bptr+mulFlag<=full
+				auto value_c=*aptr**bptr+mulFlag;
+				if(full>=*aptr**bptr+mulFlag)//*aptr**bptr+mulFlag<=full
 				{
-					*bptr=*aptr**bptr+mulFlag;
+					*inside_ptr=(*aptr)*(*bptr)+mulFlag;
 					mulFlag=0;
 				}
-				else//溢出
+				else//超过
 				{
-					auto temp=*bptr;
-					*bptr=*aptr**bptr+mulFlag;
-					mulFlag=(*aptr**bptr+mulFlag-temp)/(full+1);
-					//两个元素的积不会大于2位ull
-					//在本位存储
+					//本位存储
+					*inside_ptr=((*aptr)*(*bptr)+mulFlag)%(full+1);
+					//下位存储增值
+					mulFlag=(*aptr**bptr+mulFlag-*inside_ptr)/(full+1);
 				}
+				++inside_ptr;
 				++aptr;
 			}
+			++rptr;
+			aptr=mulha.begin();//aptr归位
 			++bptr;
 		}
 
 	}
-	else//相反
+	else//b比a长,b在上
 	{
 		while(aptr!=aEnd)
 		{
+			inside_ptr=(*rptr).begin();
 			while(bptr!=bEnd)
 			{
-				if((full-mulFlag)>=*aptr**bptr)//*aptr**bptr+mulFlag<=full
+				if(full>=*aptr**bptr+mulFlag)//*aptr**bptr+mulFlag<=full
 				{
-					*bptr=*aptr**bptr+mulFlag;
+					*inside_ptr=*aptr**bptr+mulFlag;
 					mulFlag=0;
 				}
 				else//溢出
 				{
-					auto temp=*bptr;
-					*bptr=*aptr**bptr+mulFlag;
-					mulFlag=(*aptr**bptr+mulFlag-temp)/(full+1);
-					//两个元素的积不会大于2位ull
-					//在本位存储
+					//下位存储增值
+					mulFlag=(*aptr**bptr+mulFlag)/(full+1);
+					//本位存储
+					*inside_ptr=*aptr**bptr-(mulFlag*(full+1));
 				}
+				++inside_ptr;
 				++bptr;
 			}
+			++rptr;
+			bptr=mulhb.begin();
 			++aptr;
 		}
 	}
-}*/
+	if(mulFlag!=0)
+    {
+        if(inside_ptr!=insideEnd_ptr)
+            *inside_ptr=mulFlag;
+        else
+            (*rptr).push_back(mulFlag);
+    }
+	//auto value2=*(*mulResult.begin()).begin();
+	//清除mulResult内层末尾为0的元素
+	rptr=mulResult.begin();//迭代器归位
+	inside_ptr=(*rptr).begin();//内层迭代器归位
+	insideEnd_ptr=(*rptr).end();
+	while(rptr!=rEnd)
+	{
+		while(inside_ptr!=insideEnd_ptr)
+		{
+			--insideEnd_ptr;
+			if(*insideEnd_ptr==0)
+			{
+				(*rptr).erase(insideEnd_ptr);
+			}
+			else
+				break;
+		}
+		++rptr;
+		inside_ptr=(*rptr).begin();
+		insideEnd_ptr=(*rptr).end();
+	}
+	//auto value=*(*mulResult.begin()).begin();
+	//mulResult获取完成,塞入首元素(0)增位
+	//原则是第n位mulResult塞入(n-1)个0
+	rptr=mulResult.begin();//迭代器归位
+	rEnd=mulResult.end();
+	inside_ptr=(*rptr).begin();//内层迭代器归位
+	rlenth=mulResult.size();
+	--rlenth;
+	for(;rlenth>0;--rlenth)
+	{
+		--rEnd;
+		auto temp_times=rlenth;
+		for(;temp_times>0;--temp_times)
+		{
+			(*rEnd).insert((*rEnd).begin(),0);
+		}
+	}
+	//调用add加和每个(*rptr加和)
+	rptr=mulResult.begin();
+	rEnd=mulResult.end();
+	--rEnd;
+	while(rptr!=rEnd)
+	{
+		add(*rptr,*(++rptr));
+		//++rptr;
+	}
+	ass(*rEnd,mulhb);
+}
+
+
 
 void mull(longer mulla,longer &mullb)
 {
@@ -353,15 +371,24 @@ void div(longer a,longer b)
 }
 */
 
-void lcout(longer&inLonger)
+void lcout(longer inLonger)
 {
 	auto iptr=inLonger.begin();
 	auto iEnd=inLonger.end();
+	--iEnd;
+	std::cout<<*iEnd;
 	//--iEnd;
-	//std::cout<<;
+	unsigned char LongerLenth=0;
 	while(iEnd!=iptr)
 	{
 		--iEnd;
+		//std::cout<<*iEnd<<",";
+		//对于小于10^8的数字在前面输出0,输出数量=9-位数
+		for(;(*iEnd)/10>0;(*iEnd)/=10)
+            ++LongerLenth;
+        //++LongerLenth;
+        for(;8-LongerLenth>0;++LongerLenth)
+            std::cout<<"0";
 		std::cout<<*iEnd;
 	}
 }

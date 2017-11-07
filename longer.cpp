@@ -26,7 +26,7 @@ void str2longer(string& stringIn,longer& longerIn)
 	//处理头部字符串
 	auto headLenth=stringIn.size()%8;//头部长度
 	auto string_ptr=stringIn.begin();
-	auto stringEnd_ptr=stringIn.end();
+	//auto stringEnd_ptr=stringIn.end();
 	string headString="";
 	for(;headLenth>0;--headLenth)
 	{
@@ -264,7 +264,7 @@ void mulh(longer mulha,longer &mulhb)
 	//mulResult中的longer增长
 	auto rptr=mulResult.begin();
 	auto rEnd=mulResult.end();
-	if(aBiger=1)
+	if(aBiger==1)
 	{
 		while(rptr!=rEnd)//增长内层longer,长位参数+1位
 		{
@@ -292,7 +292,7 @@ void mulh(longer mulha,longer &mulhb)
 	auto insideEnd_ptr=(*rptr).end();
 
 	unsigned long mulFlag=0;//进位标记
-	if(aBiger=1)//a比b长,a在上
+	if(aBiger==1)//a比b长,a在上
 	{
 		while(bptr!=bEnd)
 		{
@@ -311,7 +311,6 @@ void mulh(longer mulha,longer &mulhb)
 					//下位存储增值
 					mulFlag=(*aptr**bptr+mulFlag-*inside_ptr)/(full+1);
 				}
-				value_err=*inside_ptr;
 				++inside_ptr;
 				++aptr;
 			}
@@ -319,7 +318,6 @@ void mulh(longer mulha,longer &mulhb)
             if(mulFlag!=0)
                 *inside_ptr=mulFlag;
             mulFlag=0;
-            value_err=*inside_ptr;
 			++rptr;
 			aptr=mulha.begin();//aptr归位
 			++bptr;

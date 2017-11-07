@@ -7,19 +7,79 @@
 
 //const unsigned long long full=18446744073709551615;//2^64-1
 //const unsigned long long full=9999999999999999999;//10^19-1
-const sinlonger full=99999999;//10^9-1
-1000000000
-void longerInit(sinlonger ull1,longer &loNumber)
+const sinlonger fullBites=9;
+const sinlonger full=pow(10,fullBites)-1;//10^9-1
+
+void str2longer(string& stringIn,longer& longerIn)
 {
-	auto loptr=loNumber.begin();
-	auto loEnd=loNumber.end();
-	while(loptr!=loEnd)
+	//清空longer
+	auto longer_ptr=longerIn.begin();
+	auto longerEnd_ptr=longerIn.end();
+	while(longer_ptr!=longerEnd_ptr)
 	{
-		loNumber.erase(loptr);
-		++loptr;
+		--longerEnd_ptr;
+		longerIn.erase(longerEnd_ptr);
 	}
-    loNumber.push_back(ull1);
+	longerEnd_ptr=longerIn.end();
+	if(stringIn.empty())//空串
+		return;
+	//处理头部字符串
+	auto headLenth=stringIn.size()%8;//头部长度
+	auto string_ptr=stringIn.begin();
+	auto stringEnd_ptr=stringIn.end();
+	string headString="";
+	for(;headLenth>0;--headLenth)
+	{
+		headString.push_back(*string_ptr);
+		++string_ptr;
+	}
+	//只有headString,优化速度
+	sinlonger stringInParts=stringIn.size()/8;//除去头部
+	auto totalParts=stringInParts;
+	if(stringInParts==0)//没到8位,转完就返回了
+	{
+		longerIn.push_back(atoi(headString.data()));
+		return;
+	}
+	//余部字符串输入新串singleString[],然后atoi转换
+	string singleString[stringInParts];
+	for(;stringInParts>0;--stringInParts)
+	{
+		char tempAssig=8;
+		for(;tempAssig>0;--tempAssig)
+		{
+			singleString[stringInParts-1].push_back(*string_ptr);
+			//字符串为最大到0,最大为首位,0为最低位,最大为totalParts-1
+			++string_ptr;
+		}
+		//auto value_string=atoi(singleString[stringInParts-1].data());
+		//longerIn.push_back(atoi(singleString[stringInParts].data()));
+		string test=singleString[stringInParts-1];
+	}
+	//此时没有执行stringInParts=0的情况,需要补充执行
+	//singleString[stringInParts].push_back(*string_ptr);
+	//推入longer与转换方向相反,从0到最大
+	for(;stringInParts<=totalParts-1;++stringInParts)
+		longerIn.push_back(atoi(singleString[stringInParts].data()));
+	//最后推入头部
+	if(atoi(headString.data()))
+     	longerIn.push_back(atoi(headString.data()));
+    //判断b尾元素是否为0,为0则删除
+    auto lEnd=longerIn.end();
+    auto lBegin=longerIn.begin();
+	--lEnd;
+	while(lEnd!=lBegin)
+    {
+        if(*lEnd==0)
+            longerIn.erase(lEnd);
+        else
+            break;
+        --lEnd;
+    }
+    if(*lBegin==0)
+        longerIn.erase(lBegin);
 }
+
 
 void ass(longer &assa,longer &assb)
 {
@@ -206,7 +266,7 @@ void mulh(longer mulha,longer &mulhb)
 	auto rEnd=mulResult.end();
 	if(aBiger=1)
 	{
-		while(rptr!=rEnd)//增长每个longer,长位参数+1位
+		while(rptr!=rEnd)//增长内层longer,长位参数+1位
 		{
 			(*rptr).resize(aLenth+1);
 			++rptr;
@@ -220,7 +280,7 @@ void mulh(longer mulha,longer &mulhb)
 			++rptr;
 		}
 	}
-    //单位乘法计算,存储mulResult内层
+    //每个位的乘法计算,存储mulResult内层
 	auto aptr=mulha.begin();
 	auto aEnd=mulha.end();
 	auto bptr=mulhb.begin();
@@ -239,27 +299,31 @@ void mulh(longer mulha,longer &mulhb)
 			inside_ptr=(*rptr).begin();
 			while(aptr!=aEnd)
 			{
-				auto value_c=*aptr**bptr+mulFlag;
 				if(full>=*aptr**bptr+mulFlag)//*aptr**bptr+mulFlag<=full
 				{
 					*inside_ptr=(*aptr)*(*bptr)+mulFlag;
 					mulFlag=0;
 				}
-				else//超过
+				else//溢出
 				{
 					//本位存储
 					*inside_ptr=((*aptr)*(*bptr)+mulFlag)%(full+1);
 					//下位存储增值
 					mulFlag=(*aptr**bptr+mulFlag-*inside_ptr)/(full+1);
 				}
+				value_err=*inside_ptr;
 				++inside_ptr;
 				++aptr;
 			}
+			//处理未运算的mulFlag
+            if(mulFlag!=0)
+                *inside_ptr=mulFlag;
+            mulFlag=0;
+            value_err=*inside_ptr;
 			++rptr;
 			aptr=mulha.begin();//aptr归位
 			++bptr;
 		}
-
 	}
 	else//b比a长,b在上
 	{
@@ -280,22 +344,18 @@ void mulh(longer mulha,longer &mulhb)
 					//本位存储
 					*inside_ptr=*aptr**bptr-(mulFlag*(full+1));
 				}
-				++inside_ptr;
-				++bptr;
+			++bptr;
+            ++inside_ptr;
 			}
+			//处理未运算的mulFlag
+            if(mulFlag!=0)
+                *inside_ptr=mulFlag;
+            mulFlag=0;
 			++rptr;
 			bptr=mulhb.begin();
 			++aptr;
 		}
 	}
-	if(mulFlag!=0)
-    {
-        if(inside_ptr!=insideEnd_ptr)
-            *inside_ptr=mulFlag;
-        else
-            (*rptr).push_back(mulFlag);
-    }
-	//auto value2=*(*mulResult.begin()).begin();
 	//清除mulResult内层末尾为0的元素
 	rptr=mulResult.begin();//迭代器归位
 	inside_ptr=(*rptr).begin();//内层迭代器归位
@@ -316,14 +376,13 @@ void mulh(longer mulha,longer &mulhb)
 		inside_ptr=(*rptr).begin();
 		insideEnd_ptr=(*rptr).end();
 	}
-	//auto value=*(*mulResult.begin()).begin();
 	//mulResult获取完成,塞入首元素(0)增位
 	//原则是第n位mulResult塞入(n-1)个0
 	rptr=mulResult.begin();//迭代器归位
 	rEnd=mulResult.end();
 	inside_ptr=(*rptr).begin();//内层迭代器归位
 	rlenth=mulResult.size();
-	--rlenth;
+	--rlenth;//第一位不塞入
 	for(;rlenth>0;--rlenth)
 	{
 		--rEnd;
@@ -339,29 +398,10 @@ void mulh(longer mulha,longer &mulhb)
 	--rEnd;
 	while(rptr!=rEnd)
 	{
-		add(*rptr,*(++rptr));
-		//++rptr;
+		add(*rptr,*(rptr+1));
+		++rptr;
 	}
 	ass(*rEnd,mulhb);
-}
-
-
-
-void mull(longer mulla,longer &mullb)
-{
-	longer mullbBackup;
-	ass(mullb,mullbBackup);
-	longer iTimes;
-	longerInit(1,iTimes);
-	longer dChange;
-	longerInit(1,dChange);
-	for(;comp(mulla,iTimes);add(dChange,iTimes))
-	{
-		add(mullb,mullbBackup);
-		//lcout(mullbBackup);
-		//std::cout<<" ";
-	}
-	ass(mullbBackup,mullb);
 }
 
 /*
@@ -378,83 +418,19 @@ void lcout(longer inLonger)
 	--iEnd;
 	std::cout<<*iEnd;
 	//--iEnd;
-	unsigned char LongerLenth=0;
+	unsigned char LongerLenth=1;
 	while(iEnd!=iptr)
 	{
 		--iEnd;
+		LongerLenth=1;
 		//std::cout<<*iEnd<<",";
 		//对于小于10^8的数字在前面输出0,输出数量=9-位数
-		for(;(*iEnd)/10>0;(*iEnd)/=10)
-            ++LongerLenth;
-        //++LongerLenth;
-        for(;8-LongerLenth>0;++LongerLenth)
-            std::cout<<"0";
+		sinlonger longerTry=10;
+		for(;(*iEnd)>=longerTry;++LongerLenth)
+		 	longerTry=10*longerTry;
+		LongerLenth=9-LongerLenth;
+		for(;LongerLenth>0;--LongerLenth)
+			std::cout<<"0";
 		std::cout<<*iEnd;
 	}
 }
-/*
-void lcout(longer&inLonger)
-{
-	//从高位输出到低位
-	//原数字是18446744073709551616进制,需要转换输出
-	//1,0=18446744073709551616=1*18446744073709551616+0
-	//1,1,1=1*2^128+1*2^64+1*2^0
-	auto iLenth=inLonger.size()
-	if(iLenth<=1)
-	{
-		std::cout<<*inLonger.begin();
-		return;
-	}
-	auto iptr=inLonger.begin();
-	auto iEnd=inLonger.end();
-	//导出每个数字
-	unsigned char assNumber=0;
-	unsigned char singleNumber[iLenth][20];//导出数字,第一个是元素数,第二个是每个数
-	//备份
-	longer inLongerBackup;
-	ass(inLonger,inLongerBackup);
-	auto ibptr=inLongerBackup.begin();
-	auto ibEnd=inLongerBackup.end();
-
-	iLenth=0;
-
-	while(ibptr!=ibEnd)
-	{
-		for(;assNumber<20;++assNumber)
-		{
-			singleNumber[iLenth][assNumber]=*ibptr%10;
-			*ibptr/=10;
-		}
-		++ibptr;
-		++iLenth;
-	}
-	//18446744073709551616进制,20个10进制
-	//1,1553255926290448384=2e19
-	//原数字是18446744073709551616进制,需要转换输出
-	//1,0=18446744073709551616=1*18446744073709551616+0
-	//1,1,1=1*2^128+1*2^64+1*2^0
-	std::vector<unsigned> outNumber(1,0);//0-4294967295
-	//每个元素存放10位数
-	//不够的时候push_back
-	auto optr=outNumber.begin();
-	auto oEnd=outNumber.end();
-	iLenth=0;
-
-	//未完成
-	while(iptr!=iEnd)//遍历每个元素进行处理
-	{
-		//遍历这个元素的20个数字
-		for(assNumber=0;assNumber<20;++assNumber)//0-19
-		{
-			//合成:
-			singleNumber[iLenth][assNumber]
-		}
-	}
-	//最终输出,反向
-	oEnd=outNumber.end();
-	optr=outNumber.begin()
-	for(;optr!=oEnd;--oEnd)
-	{
-		std::cout<<*oEnd;
-	}
-}*/

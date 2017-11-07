@@ -13,23 +13,22 @@ longer赋值使用ass函数,右值在前,必须也是longer.
 */
 #include <vector>
 #include <iostream>
+#include <string>
+#include <cstdlib>
+#include <math.h>
 
-typedef unsigned long sinlonger;
+typedef unsigned long long sinlonger;
 typedef std::vector<sinlonger> longer;
 
 using std::vector;
+using std::string;
 
 //声明
-void longerInit(sinlonger,longer&);/*
-void longerInit(ull,ull,longer&);
-void longerInit(ull,ull,ull,longer&);
-void longerInit(ull,ull,ull,ull,longer&);
-void longerInit(ull,ull,ull,ull,ull,longer&);*///临时用
-/*赋初值,将ull的值放入新建立的longer,
-如果不是会清楚除了首位以外所以的元素,
-ull要小于10位数,
-*/
 
+void str2longer(string&,longer&);
+/*字符串转longer函数,理论支持长度为2^61的十进制数,
+不要输入字母,否则引发错误.
+调用此函数一定会清空longer,无论是有否输入.*/
 
 void ass(longer&,longer&);
 /*ass函数赋值,接收两个longer的引用,
@@ -50,11 +49,9 @@ char comp(longer&,longer&);
 /*Come函数用于比较两个longer的大小,
 若前者大于后者则返回1,反之返回-1,相等返回0*/
 
-void mulh(longer,longer&);//高性能版乘法(测试)
+void mulh(longer,longer&);//高性能版乘法(alpha)
 /*mul函数求积,接收两个longer的引用,
 求积后的结果保存在第二个参数中.*/
-
-void mull(longer,longer&);//低性能版乘法,基于加法
 
 //void mod(longer&,longer&);
 /*mod函数求模,接收两个longer的引用,

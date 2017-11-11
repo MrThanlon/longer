@@ -80,43 +80,15 @@ void str2longer(string& stringIn,longer& longerIn)
         longerIn.erase(lBegin);
 }
 
-
 void ass(longer &assa,longer &assb)
 {
-	auto aLenth=assa.size();
-	auto bLenth=assb.size();
 	auto aptr=assa.begin();
 	auto aEnd=assa.end();
-	auto bptr=assb.begin();
-	auto bEnd=assb.end();
-	if(aLenth<=bLenth)//b可以容纳a
+	assb.clear();//高速清除assb
+	while(aptr!=aEnd)
 	{
-		while(aptr!=aEnd)
-		{
-			*bptr=*aptr;//赋值
-			++bptr;//指针+1
-			++aptr;
-		}
-		//删除b末尾元素
-		while(aLenth!=bLenth)
-		{
-			assb.erase(--assb.end());//删除尾元素
-			--bLenth;
-		}
-	}
-	else//b无法容纳a,使用b.push_back(*aptr)
-	{
-		while(bptr!=bEnd)
-		{
-			*bptr=*aptr;//赋值
-			++bptr;//指针+1
-			++aptr;
-		}
-		while(aptr!=aEnd)
-		{
-			assb.push_back(*aptr);
-			++aptr;
-		}
+		assb.push_back(*aptr);
+		++aptr;
 	}
 }
 
@@ -143,10 +115,12 @@ void add(longer adda,longer &addb)
 	sinlonger plusFlag=0;//+1信号传递
 	while(aptr!=aEnd)//对a执行加到b动作
 	{
+	    //auto value_a=*aptr;
+		//auto value_b=*bptr;
 		//对ull进行相加,相加前判断是否溢出
-		if(full-plusFlag-*aptr>=*bptr)//*aptr+*bptr+plusFlag<=full
+		if(*aptr+*bptr+plusFlag<=full)//*aptr+*bptr+plusFlag<=full
 		{
-			*bptr=*bptr+*aptr;//不溢出,直接相加
+			*bptr=*bptr+*aptr+plusFlag;//不溢出,直接相加
 			plusFlag=0;
 		}
 		else//溢出,加到下一位,*bptr=*aptr+*bptr-full
@@ -155,6 +129,7 @@ void add(longer adda,longer &addb)
 			//给下一位传递信号,让下1位+1
 			plusFlag=1;
 		}
+		//auto value_plus=*bptr;
 		++aptr;
 		++bptr;
 	}
@@ -179,34 +154,47 @@ void add(longer adda,longer &addb)
 		addb.erase(bEnd);
 }
 
-void sub(longer suba,longer &subb)
+void sub(longer subb,longer &suba)
 {
+	//等同于b-a
 	auto aLenth=suba.size();
 	auto bLenth=subb.size();
-	if(aLenth>bLenth)//显然a>b
+	if(comp(suba,subb)==1)//a>b
 		return;//直接返回
+    if(comp(suba,subb)==0)//a=b
+    {
+        suba.clear();
+        suba.push_back(0);
+        return;
+    }
 	//b>=a,执行b-a
 	auto aptr=suba.begin();
 	auto aEnd=suba.end();
 	auto bptr=subb.begin();
 	auto bEnd=subb.end();
+	auto value_a=*aptr;
+	auto value_b=*bptr;
 	//减法规则,总低位开始执行减法,若减数小于被减数则从高位取值
 	sinlonger subFlag=0;//高位取值标记,0或1
 	while(aptr!=aEnd)
 	{
-		if(*aptr<=(*bptr-subFlag))//(减数-subFlag)大于等于被减数,直接相减
+		if(*aptr<=(*bptr-subFlag))//(被减数-subFlag)大于等于减数,直接相减
 		{
-			*bptr=*bptr-*aptr;
+			*aptr=*bptr-*aptr;
 			subFlag=0;
 		}
 		else//(减数-subFlag)小于被减数,从高位取值
 		{
-			*bptr=full-*aptr+*bptr;
+			*aptr=full-*aptr+*bptr;
 			subFlag=1;
 		}
+		value_a=*aptr;
+		value_b=*bptr;
 		++aptr;
 		++bptr;
 	}
+	if(subFlag)//把subFlag减到0
+        suba.push_back(*bptr-1);
 	//判断b尾元素是否为0,为0则删除
 	--bEnd;
 	if(*bEnd==0)
@@ -239,6 +227,31 @@ char comp(longer &compa,longer &compb)
 	if(*aptr<*bptr)
 		return -1;
 	return 0;//a=b
+}
+
+inline void addForMulh(longer addFMa,longer &addFMb,sinlonger addLenth)
+{
+	//add函数变种,将两个参数错位叠加,结果保存到第二个参数
+	//错位相加:第二个参数低位塞入addLenth个0,与第一个参数相加
+	//clear之后再塞入,可以大幅加快速度
+	auto addFMaptr=addFMa.begin();
+	auto addFMaEnd=addFMa.end();
+	longer addFMbCopy;//拷贝
+	ass(addFMb,addFMbCopy);
+	auto bCopy_ptr=addFMbCopy.begin();
+	auto bCopyEnd=addFMbCopy.end();
+	addFMb.clear();//清空
+	//塞入0
+	for(;addLenth>0;--addLenth)
+		addFMb.push_back(0);
+	//恢复拷贝
+	while(bCopy_ptr!=bCopyEnd)
+	{
+		addFMb.push_back(*bCopy_ptr);
+		++bCopy_ptr;
+	}
+	//加和
+	add(addFma,addFMb);
 }
 
 void mulh(longer mulha,longer &mulhb)
@@ -374,40 +387,175 @@ void mulh(longer mulha,longer &mulhb)
 		inside_ptr=(*rptr).begin();
 		insideEnd_ptr=(*rptr).end();
 	}
-	//mulResult获取完成,塞入首元素(0)增位
-	//原则是第n位mulResult塞入(n-1)个0
+	//使用高性能方案,不调用insert,错位叠加(addForMulh)到结果
 	rptr=mulResult.begin();//迭代器归位
 	rEnd=mulResult.end();
-	inside_ptr=(*rptr).begin();//内层迭代器归位
-	rlenth=mulResult.size();
-	--rlenth;//第一位不塞入
-	for(;rlenth>0;--rlenth)
-	{
-		--rEnd;
-		auto temp_times=rlenth;
-		for(;temp_times>0;--temp_times)
-		{
-			(*rEnd).insert((*rEnd).begin(),0);
-		}
-	}
-	//调用add加和每个(*rptr加和)
-	rptr=mulResult.begin();
-	rEnd=mulResult.end();
 	--rEnd;
+	sinlonger resultAddLenth=1;
 	while(rptr!=rEnd)
 	{
-		add(*rptr,*(rptr+1));
+		addForMulh(*rptr,*(rptr+1),resultAddLenth);
 		++rptr;
+		++resultAddLenth;
 	}
 	ass(*rEnd,mulhb);
 }
 
-/*
-void div(longer a,longer b)
+void mulh(sinlonger mulha,longer &mulhb)
 {
+    //重载版,照抄上面,对a处理下优化即可
+    auto bLenth=mulhb.size();
+	//结果位数一定小于bLenth+1
+	vector<longer> mulResult;
+	//存储每次下面的值与上面的值的乘积
+	//mulResult中的longer增长
+    //每个位的乘法计算,存储mulResult内层
+	auto bptr=mulhb.begin();
+	auto bEnd=mulhb.end();
+
+	unsigned long mulFlag=0;//进位标记
+	while(bptr!=bEnd)
+	{
+		if(full>=mulha**bptr+mulFlag)//mulha**bptr+mulFlag<=full
+		{
+			*bptr=mulha**bptr+mulFlag;
+			mulFlag=0;
+		}
+		else//溢出
+		{
+			//下位存储增值
+			mulFlag=(mulha**bptr+mulFlag)/(full+1);
+			//本位存储
+			*bptr=mulha**bptr-(mulFlag*(full+1));
+		}
+	++bptr;
+	}
+	//处理未运算的mulFlag
+    if(mulFlag!=0)
+        mulhb.push_back(mulFlag);
+    mulFlag=0;
+	//清除mulhb末尾为0的元素
+    if(*(mulhb.end()-1)==0)
+        mulhb.erase(mulhb.end()-1);
+}
+
+
+
+
+
+void divl(longer divlDivdend,longer &divlDivisor,bool divlResultType)
+{
+	//模拟手工运算
+	//resultType=0表示求商,1表示求模
+	auto ldivdendLenth=divlDivdend.size();
+	auto ldivisorLenth=divlDivisor.size();
+	if(ldivdendLenth>ldivisorLenth)//除数大于被除数,0,返回
+	{
+		divlDivisor.clear();
+		divlDivisor.push_back(0);
+		return;
+	}
+	//高位指针(ldivdend_end)后推,后推次数为divisorLenth-1次
+	auto ldivdend_ptr=divlDivdend.begin();
+	auto ldivdend_end=divlDivdend.end();
+	auto ldivisor_ptr =divlDivisor.begin();
+	auto ldivisor_end =divlDivisor.end();
+	longer tempDivdendLonger;//临时被除数,长
+	longer tempDivisorLonger;//临时除数,长
+	ass(divlDivisor,tempDivisorLonger);
+	--ldivdend_end;
+	--ldivisorLenth;
+	for(;ldivisorLenth>0;--ldivisorLenth)
+	{
+		tempDivdendLonger.push_back(ldivdend_end);//推入临时被除数,长
+		--ldivdend_end;
+
+	}
+	//调用除法专用的乘法和比较函数,结果push_back
+	sinlonger tempDivdend;//临时被除数
+	sinlonger tempDivisor;//临时除数
+	auto tempDiv_ptr=tempDivdend.begin();
+	longer tempResult;//临时存储结果,因为高低位与结果相反
+	auto tempRes_ptr=tempResult.begin();
+	auto tempRes_end=tempRes_ptr;//反正没有元素
+	longer longerRemainder;//余数,除数位数不是1的情况
+	longer divlDivisorCopy;//备份用
+	//ass(divlDivisor,divlDivisorCopy);
+	sinlonger sinDivResult=0;//单次除法结果
+	//执行除法运算,从高位(end)到低位(begin)
+	if(ldivisorLenth==1)//除数只有1位就很简单
+	{
+		//按位除法
+		sinlonger singleRemainder=0;//单次除法余数
+		while(ldivdend_end!=ldivdend_ptr)
+		{
+			sinDivResult=((singleRemainder*(full+1)+*ldivdend_end)/(*ldivisor_ptr));
+			tempResult.push_back(sinDivResult);
+			singleRemainder=*ldivdend_end-*ldivisor_ptr*sinDivResult;
+			--ldivdend_end;
+		}
+		tempRes_end=tempResult.end();
+		divlDivisor.clear();
+		//结果赋值
+		if(divlResultType)//求商
+		{
+			while(tempRes_ptr!=tempRes_end)
+			{
+				--tempRes_end;
+				divlDivisor.push_back(tempRes_end);
+			}
+			return;
+		}
+		divlDivisor.push_back(singleRemainder);//求模
+	}
+	//除数位数不是1的情况
+	tempDivisor=((*ldivisor_end)*(full+1)+*(ldivisor_end-1));
+	while(ldivdend_end!=ldivdend_ptr)
+	{
+		
+
+
+
+
+
+
+
+		longerRemainder;//这个没有加进去,有问题
+		//先对临时除数,被除数赋值
+		tempDivdend=((*ldivdend_end)*(full+1)+*(ldivdend_end-1));
+		//tempDivisor=((*ldivisor_end)*(full+1)+*(ldivisor_end-1));
+		sinDivResult=tempDivdend/tempDivisor;//得到大概的结果(只可能大,不可能小),需要-1或者不变
+		ass(divlDivisor,divlDivisorCopy);
+		mulh(sinDivResult,divlDivisorCopy);
+		if(comp(divlDivdend,divlDivisorCopy)==-1)//sinDivResult大了,减1
+
+
+
+		{
+			--sinDivResult;//按理说-1应该可以了,不过可能有问题,需要算法确认,先用着
+		}
+
+
+
+		tempResult.push_back(sinDivResult);
+		longerRemainder;//计算余数
+		//余数等于被除数减去结果乘上除数
+		ass(divlDivisor,divlDivisorCopy);
+		mulh(sinDivResult,divlDivisorCopy);
+		tempDivdend
+		sub()
+
+
+
+
+
+	}
 
 }
-*/
+
+
+
+
 
 void lcout(longer inLonger)
 {

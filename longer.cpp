@@ -157,8 +157,8 @@ void add(longer adda,longer &addb)
 void sub(longer subb,longer &suba)
 {
 	//等同于b-a
-	auto aLenth=suba.size();
-	auto bLenth=subb.size();
+//	auto aLenth=suba.size();
+//	auto bLenth=subb.size();
 	if(comp(suba,subb)==1)//a>b
 		return;//直接返回
     if(comp(suba,subb)==0)//a=b
@@ -172,8 +172,8 @@ void sub(longer subb,longer &suba)
 	auto aEnd=suba.end();
 	auto bptr=subb.begin();
 	auto bEnd=subb.end();
-	auto value_a=*aptr;
-	auto value_b=*bptr;
+//	auto value_a=*aptr;
+//	auto value_b=*bptr;
 	//减法规则,总低位开始执行减法,若减数小于被减数则从高位取值
 	sinlonger subFlag=0;//高位取值标记,0或1
 	while(aptr!=aEnd)
@@ -185,21 +185,78 @@ void sub(longer subb,longer &suba)
 		}
 		else//(减数-subFlag)小于被减数,从高位取值
 		{
-			*aptr=full-*aptr+*bptr;
+			*aptr=full+1-*aptr-subFlag+*bptr;
 			subFlag=1;
 		}
-		value_a=*aptr;
-		value_b=*bptr;
 		++aptr;
 		++bptr;
 	}
 	if(subFlag)//把subFlag减到0
+    {
         suba.push_back(*bptr-1);
-	//判断b尾元素是否为0,为0则删除
-	--bEnd;
-	if(*bEnd==0)
-		subb.erase(bEnd);
+    	++bptr;
+    }
+    while(bptr!=bEnd)
+    {
+    	suba.push_back(*bptr);
+    	++bptr;
+    }
+    if(*(suba.end()-1)==0)
+        suba.erase(suba.end()-1);
 }
+
+void sub(longer subb,longer &suba,longer &subResult)
+{
+	//等同于b-a
+//	auto aLenth=suba.size();
+//	auto bLenth=subb.size();
+	if(comp(suba,subb)==1)//a>b
+		return;//直接返回
+    if(comp(suba,subb)==0)//a=b
+    {
+        subResult.clear();
+        subResult.push_back(0);
+        return;
+    }
+	//b>=a,执行b-a
+	auto aptr=suba.begin();
+	auto aEnd=suba.end();
+	auto bptr=subb.begin();
+	auto bEnd=subb.end();
+	subResult.clear();
+//	auto subRptr=subResult.begin();
+	//减法规则,总低位开始执行减法,若减数小于被减数则从高位取值
+	sinlonger subFlag=0;//高位取值标记,0或1
+	while(aptr!=aEnd)
+	{
+		if(*aptr+subFlag<=*bptr)//(被减数-subFlag)大于等于减数,直接相减
+		{
+			subResult.push_back(*bptr-*aptr);
+			subFlag=0;
+		}
+		else//(减数-subFlag)小于被减数,从高位取值
+		{
+			subResult.push_back(full+1-*aptr-subFlag+*bptr);
+			subFlag=1;
+		}
+		++aptr;
+		++bptr;
+	}
+	if(subFlag)//把subFlag减到0
+    {
+        subResult.push_back(*bptr-1);
+    	++bptr;
+    }
+    //因为a后面都是0,所以如果b没减完就全部推入subResult
+    while(bptr!=bEnd)
+    {
+    	subResult.push_back(*bptr);
+    	++bptr;
+    }
+    if(*(subResult.end()-1)==0)
+        subResult.erase(subResult.end()-1);
+}
+
 
 char comp(longer &compa,longer &compb)
 {
@@ -234,8 +291,8 @@ inline void addForMulh(longer addFMa,longer &addFMb,sinlonger addLenth)
 	//add函数变种,将两个参数错位叠加,结果保存到第二个参数
 	//错位相加:第二个参数低位塞入addLenth个0,与第一个参数相加
 	//clear之后再塞入,可以大幅加快速度
-	auto addFMaptr=addFMa.begin();
-	auto addFMaEnd=addFMa.end();
+//	auto addFMaptr=addFMa.begin();
+//	auto addFMaEnd=addFMa.end();
 	longer addFMbCopy;//拷贝
 	ass(addFMb,addFMbCopy);
 	auto bCopy_ptr=addFMbCopy.begin();
@@ -251,7 +308,7 @@ inline void addForMulh(longer addFMa,longer &addFMb,sinlonger addLenth)
 		++bCopy_ptr;
 	}
 	//加和
-	add(addFma,addFMb);
+	add(addFMa,addFMb);
 }
 
 void mulh(longer mulha,longer &mulhb)
@@ -273,7 +330,7 @@ void mulh(longer mulha,longer &mulhb)
 		mulResult.resize(aLenth);
 		aBiger=0;
 	}
-	auto rlenth=mulResult.size();
+//	auto rlenth=mulResult.size();
 	//mulResult中的longer增长
 	auto rptr=mulResult.begin();
 	auto rEnd=mulResult.end();
@@ -404,7 +461,7 @@ void mulh(longer mulha,longer &mulhb)
 void mulh(sinlonger mulha,longer &mulhb)
 {
     //重载版,照抄上面,对a处理下优化即可
-    auto bLenth=mulhb.size();
+//    auto bLenth=mulhb.size();
 	//结果位数一定小于bLenth+1
 	vector<longer> mulResult;
 	//存储每次下面的值与上面的值的乘积
@@ -413,35 +470,94 @@ void mulh(sinlonger mulha,longer &mulhb)
 	auto bptr=mulhb.begin();
 	auto bEnd=mulhb.end();
 
-	unsigned long mulFlag=0;//进位标记
-	while(bptr!=bEnd)
-	{
-		if(full>=mulha**bptr+mulFlag)//mulha**bptr+mulFlag<=full
-		{
-			*bptr=mulha**bptr+mulFlag;
-			mulFlag=0;
-		}
-		else//溢出
-		{
-			//下位存储增值
-			mulFlag=(mulha**bptr+mulFlag)/(full+1);
-			//本位存储
-			*bptr=mulha**bptr-(mulFlag*(full+1));
-		}
-	++bptr;
-	}
-	//处理未运算的mulFlag
-    if(mulFlag!=0)
-        mulhb.push_back(mulFlag);
-    mulFlag=0;
+	sinlonger mulFlag=0;//进位标记
+			while(bptr!=bEnd)
+			{
+				if(full>=mulha**bptr+mulFlag)//mulha**bptr+mulFlag<=full
+				{
+					*bptr=mulha**bptr+mulFlag;
+					mulFlag=0;
+				}
+				else//溢出
+				{
+					auto tempTotal=mulha**bptr+mulFlag;//总数
+					//下位存储增值
+					mulFlag=tempTotal/(full+1);
+					//本位存储
+					*bptr=tempTotal-(mulFlag*(full+1));
+				}
+			++bptr;
+			}
+			//处理未运算的mulFlag
+            if(mulFlag!=0)
+                mulhb.push_back(mulFlag);
+            mulFlag=0;
 	//清除mulhb末尾为0的元素
     if(*(mulhb.end()-1)==0)
         mulhb.erase(mulhb.end()-1);
 }
 
-
-
-
+inline void tempDivForDivl(
+longer &TDFDa,longer &TDFDb,
+sinlonger &TDFDmerchant,longer &TDFDremainder)
+//低性能除法专用
+{
+	//等同于TDFDa/TDFDb
+	//TDFDa比TDFDb长1位或者相等,这个函数用于计算他们的商和余数
+	//结果写入sinlonger
+	if(comp(TDFDa,TDFDb)<0)//不用想,写0
+	{
+		TDFDmerchant=0;
+		ass(TDFDa,TDFDremainder);
+		return;
+	}
+	if(comp(TDFDa,TDFDb)==0)//不用想,写1
+	{
+		TDFDmerchant=1;
+		TDFDremainder.clear();
+		TDFDremainder.push_back(0);
+		return;
+	}
+	sinlonger tempDivdend=(*(TDFDa.end()-1)*(full+1)+*(TDFDa.end()-2));//临时被除数,两位
+	sinlonger tempDivisor=0;
+	if(TDFDa.size()==TDFDb.size())
+        tempDivisor=(*(TDFDb.end()-1)*(full+1)+*(TDFDb.end()-2));//临时除数,两位
+    else
+        tempDivisor=(*(TDFDb.end()-1));//临时除数,一位
+	TDFDmerchant=tempDivdend/tempDivisor;//初步计算
+	//验证,精确计算,到TDFDbCopy刚好大于TDFDa,然后把TDFDmerchant减去1即可
+	//为了高效不会每次都使用乘法,只在一开始使用乘法,然后用加法
+	longer TDFDbCopy;
+	ass(TDFDb,TDFDbCopy);//TDFDmerchant/=10;
+    mulh(TDFDmerchant,TDFDbCopy);
+	if(comp(TDFDbCopy,TDFDa)==0)//刚刚好,得整数
+	{
+		TDFDremainder.clear();
+		TDFDremainder.push_back(0);
+		return;
+	}
+	longer tempTDFDresult;
+	if(comp(TDFDbCopy,TDFDa)==1)//大了
+	{
+		sub(TDFDbCopy,TDFDb,tempTDFDresult);
+		--TDFDmerchant;//优化性能,反正都要判断一次
+		for(;comp(tempTDFDresult,TDFDa)==1;--TDFDmerchant)
+			sub(TDFDbCopy,TDFDb,tempTDFDresult);
+		//++TDFDmerchant;//得到正确结果//刚好小于就是正确的
+		sub(TDFDa,TDFDbCopy,TDFDremainder);//计算余数
+		return;
+	}
+	//if(comp(TDFDbCopy,TDFDa)==-1)//小了
+	//{//应该不需要判断了
+		add(TDFDb,TDFDbCopy);
+		++TDFDmerchant;
+		for(;comp(TDFDbCopy,TDFDa)==-1;++TDFDmerchant)
+			add(TDFDb,TDFDbCopy);
+		--TDFDmerchant;//得到正确结果
+		sub(TDFDbCopy,TDFDb,TDFDbCopy);
+		sub(TDFDa,TDFDbCopy,TDFDremainder);//计算余数
+	//}
+}
 
 void divl(longer divlDivdend,longer &divlDivisor,bool divlResultType)
 {
@@ -449,7 +565,7 @@ void divl(longer divlDivdend,longer &divlDivisor,bool divlResultType)
 	//resultType=0表示求商,1表示求模
 	auto ldivdendLenth=divlDivdend.size();
 	auto ldivisorLenth=divlDivisor.size();
-	if(ldivdendLenth>ldivisorLenth)//除数大于被除数,0,返回
+	if(ldivdendLenth<ldivisorLenth)//除数大于被除数,0,返回
 	{
 		divlDivisor.clear();
 		divlDivisor.push_back(0);
@@ -459,42 +575,27 @@ void divl(longer divlDivdend,longer &divlDivisor,bool divlResultType)
 	auto ldivdend_ptr=divlDivdend.begin();
 	auto ldivdend_end=divlDivdend.end();
 	auto ldivisor_ptr =divlDivisor.begin();
-	auto ldivisor_end =divlDivisor.end();
-	longer tempDivdendLonger;//临时被除数,长
-	longer tempDivisorLonger;//临时除数,长
-	ass(divlDivisor,tempDivisorLonger);
-	--ldivdend_end;
-	--ldivisorLenth;
-	for(;ldivisorLenth>0;--ldivisorLenth)
-	{
-		tempDivdendLonger.push_back(ldivdend_end);//推入临时被除数,长
-		--ldivdend_end;
-
-	}
-	//调用除法专用的乘法和比较函数,结果push_back
-	sinlonger tempDivdend;//临时被除数
-	sinlonger tempDivisor;//临时除数
-	auto tempDiv_ptr=tempDivdend.begin();
-	longer tempResult;//临时存储结果,因为高低位与结果相反
-	auto tempRes_ptr=tempResult.begin();
-	auto tempRes_end=tempRes_ptr;//反正没有元素
-	longer longerRemainder;//余数,除数位数不是1的情况
-	longer divlDivisorCopy;//备份用
-	//ass(divlDivisor,divlDivisorCopy);
+//	auto ldivisor_end =divlDivisor.end();
+	//调用乘法和比较函数,存入可能结果,确定后push_back
+	sinlonger singleRemainder=0;//单次除法余数
+	longer tempResult;//临时存储结果,高低位与最终结果相反
+	longer longerRemainder;//余数,除数位数不是1的情况,长度与除数相同
+	longer divlDivdendCopy;//临时被除数,完整版,比除数长1位
 	sinlonger sinDivResult=0;//单次除法结果
 	//执行除法运算,从高位(end)到低位(begin)
 	if(ldivisorLenth==1)//除数只有1位就很简单
 	{
 		//按位除法
-		sinlonger singleRemainder=0;//单次除法余数
 		while(ldivdend_end!=ldivdend_ptr)
 		{
+			--ldivdend_end;
 			sinDivResult=((singleRemainder*(full+1)+*ldivdend_end)/(*ldivisor_ptr));
 			tempResult.push_back(sinDivResult);
-			singleRemainder=*ldivdend_end-*ldivisor_ptr*sinDivResult;
-			--ldivdend_end;
+			//value3=
+			singleRemainder=singleRemainder*(full+1)+*ldivdend_end-*ldivisor_ptr*sinDivResult;
 		}
-		tempRes_end=tempResult.end();
+		auto tempRes_ptr=tempResult.begin();
+		auto tempRes_end=tempResult.end();
 		divlDivisor.clear();
 		//结果赋值
 		if(divlResultType)//求商
@@ -502,60 +603,64 @@ void divl(longer divlDivdend,longer &divlDivisor,bool divlResultType)
 			while(tempRes_ptr!=tempRes_end)
 			{
 				--tempRes_end;
-				divlDivisor.push_back(tempRes_end);
+				divlDivisor.push_back(*tempRes_end);
 			}
+			if(*(divlDivisor.end()-1)==0)//除去末尾的0
+                divlDivisor.erase(divlDivisor.end()-1);
 			return;
 		}
 		divlDivisor.push_back(singleRemainder);//求模
 	}
-	//除数位数不是1的情况
-	tempDivisor=((*ldivisor_end)*(full+1)+*(ldivisor_end-1));
+	auto temp_ptr=ldivdend_end;
+	for(;ldivisorLenth>1;--ldivisorLenth)
+		--ldivdend_end;//被除数指针后推
+	temp_ptr=ldivdend_end;//保留
+	for(;ldivdend_end!=divlDivdend.end();++ldivdend_end)
+		longerRemainder.push_back(*ldivdend_end);
+	ldivdend_end=temp_ptr;//恢复
+	auto longerRemainder_ptr=longerRemainder.begin();
+	auto longerRemainder_end=longerRemainder.end();
+	//tempDivisor=((*ldivisor_end)*(full+1)+*(ldivisor_end-1));
 	while(ldivdend_end!=ldivdend_ptr)
 	{
-		
-
-
-
-
-
-
-
-		longerRemainder;//这个没有加进去,有问题
-		//先对临时除数,被除数赋值
-		tempDivdend=((*ldivdend_end)*(full+1)+*(ldivdend_end-1));
-		//tempDivisor=((*ldivisor_end)*(full+1)+*(ldivisor_end-1));
-		sinDivResult=tempDivdend/tempDivisor;//得到大概的结果(只可能大,不可能小),需要-1或者不变
-		ass(divlDivisor,divlDivisorCopy);
-		mulh(sinDivResult,divlDivisorCopy);
-		if(comp(divlDivdend,divlDivisorCopy)==-1)//sinDivResult大了,减1
-
-
-
+		//计算临时被除数,加入余数longerRemainder
+		--ldivdend_end;
+//		auto value1=*ldivdend_end;//debug
+//		auto value2=*longerRemainder_ptr;
+//		auto value3=longerRemainder.size();
+//		auto value4=divlDivdendCopy.size();
+		//生成完整的临时被除数
+		divlDivdendCopy.clear();
+		divlDivdendCopy.push_back(*ldivdend_end);//推入最低位
+		longerRemainder_end=longerRemainder.end();//每次运算后可能改变
+		longerRemainder_ptr=longerRemainder.begin();
+		while(longerRemainder_ptr!=longerRemainder_end)
 		{
-			--sinDivResult;//按理说-1应该可以了,不过可能有问题,需要算法确认,先用着
+			divlDivdendCopy.push_back(*longerRemainder_ptr);
+			++longerRemainder_ptr;
 		}
-
-
-
-		tempResult.push_back(sinDivResult);
-		longerRemainder;//计算余数
-		//余数等于被除数减去结果乘上除数
-		ass(divlDivisor,divlDivisorCopy);
-		mulh(sinDivResult,divlDivisorCopy);
-		tempDivdend
-		sub()
-
-
-
-
-
+		//计算完整的临时被除数和除数的商和余数
+		tempDivForDivl(divlDivdendCopy,divlDivisor,
+		sinDivResult,longerRemainder);
+		tempResult.push_back(sinDivResult);//推入结果
 	}
-
+	//输出结果
+	if(divlResultType)//求商
+	{
+		//反向赋值tempResult到divlDivisor
+		divlDivisor.clear();
+		auto tempRes_ptr=tempResult.begin();
+		auto tempRes_end=tempResult.end();
+		while(tempRes_end!=tempRes_ptr)
+		{
+			--tempRes_end;
+			divlDivisor.push_back(*tempRes_end);
+		}
+		return;
+	}
+	//输出余数
+	ass(longerRemainder,divlDivisor);
 }
-
-
-
-
 
 void lcout(longer inLonger)
 {

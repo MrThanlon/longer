@@ -39,7 +39,8 @@ void add(longer,longer&);
 求和后的结果保存在第二个参数中,
 把大的数放在后面可以提高性能.*/
 
-void sub(longer,longer&);
+void sub(longer,longer&);//结果写入第二个参数
+void sub(longer,longer&,longer&);//结果写入第三个参数
 /*Sub函数求差,接收longer的,第一个参数减去第二个参数
 求差后的结果保存在第二个参数的中,
 第一个参数必须大于第二个参数,
@@ -59,6 +60,7 @@ void mulh(sinlonger,longer&);//重载,可以用sinlonger乘了
 /*mod函数求模,接收longer,
 第一个参数模第二个参数,
 求模后的结果保存在第二个参数中.*/
+void tempDivForDivl(longer&,longer&,sinlonger&,sinlonger&);
 
 void divl(longer,longer&,bool);//低性能版,临时用
 /*div函数求商,接收longer,bool,bool=1求商,0求模
